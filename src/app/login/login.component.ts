@@ -2,6 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { Router, ActivatedRoute } from "@angular/router";
 import { BackendService } from "../backend.service";
 import { FormBuilder, Validators, FormGroup } from "@angular/forms";
+import Swal from 'sweetalert2'
 
 @Component({
   selector: "app-login",
@@ -10,12 +11,13 @@ import { FormBuilder, Validators, FormGroup } from "@angular/forms";
 })
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
+  submitting: Boolean = false;
   constructor(
     private formBuilder: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
     private backendService: BackendService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loginForm = this.formBuilder.group({
@@ -30,21 +32,39 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit() {
+    this.submitting = true;
     // เมื่อเรากดปุ่ม login ให้มาที่ ฟังก์ชั่นนี้
     if (!this.loginForm.invalid) {
       this.backendService
         .login(this.f.username.value, this.f.password.value)
         .subscribe(data => {
           if (data.status) {
-            alert("login success!");
+            Swal.fire({
+              type: 'success',
+              title: 'สำเร็จ',
+              text: 'Login success!'
+            })
+
             this.router.navigate(["/home"]);
           } else {
-            alert("login fail!");
+            Swal.fire({
+              type: 'error',
+              title: 'แจ้งเตือน',
+              text: 'Login fail!'
+            })
+
             this.router.navigate(["/login"]);
           }
+          this.submitting = false;
         });
     } else {
-      alert("Invalid!"); // show mesage กรณีกรอกข้อมูลไม่ครบใน input
+      Swal.fire({
+        type: 'error',
+        title: 'แจ้งเตือน',
+        text: 'กรุณากรอกข้อมูลให้ครบถ้วน!'
+      }) // show mesage กรณีกรอกข้อมูลไม่ครบใน input
+
+      this.submitting = false;
     }
   }
 }

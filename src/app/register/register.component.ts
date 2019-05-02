@@ -2,6 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { Router, ActivatedRoute } from "@angular/router";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { BackendService } from "../backend.service";
+import Swal from 'sweetalert2'
 
 @Component({
   selector: "app-register",
@@ -10,12 +11,13 @@ import { BackendService } from "../backend.service";
 })
 export class RegisterComponent implements OnInit {
   registerForm: FormGroup;
+  submitting: Boolean = false;
   constructor(
     private formBuilder: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
     private backendService: BackendService
-  ) {}
+  ) { }
 
   ngOnInit() {
     // เป็น initial form ค่าฟอร์มเริ่มต้น
@@ -36,6 +38,7 @@ export class RegisterComponent implements OnInit {
   }
 
   onSubmit() {
+    this.submitting = true;
     // เมื่อเรากดปุ่ม register ให้มาที่ ฟังก์ชั่นนี้
     console.log(this.f.rank.value);
 
@@ -52,12 +55,35 @@ export class RegisterComponent implements OnInit {
         )
         .subscribe(data => {
           if (data) {
-            alert("Register success!");
-            this.router.navigate(["/home"]);
+            if (data.status == true) {
+              Swal.fire({
+                type: 'success',
+                title: 'สำเร็จ',
+                text: 'Register success!'
+              })
+
+              this.router.navigate(["/home"]);
+            } else {
+              console.log(data);
+
+              Swal.fire({
+                type: 'error',
+                title: 'แจ้งเตือน',
+                text: data.message
+              })
+
+            }
           }
+          this.submitting = false;
         });
     } else {
-      alert("Invalid!"); // show mesage กรณีกรอกข้อมูลไม่ครบใน input
+      Swal.fire({
+        type: 'error',
+        title: 'แจ้งเตือน',
+        text: 'กรุณากรอกข้อมูลให้ครบถ้วน!'
+      })
+
+      this.submitting = false;
     }
   }
 }
